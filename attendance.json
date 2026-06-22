@@ -70,5 +70,15 @@
         "workingHours": 9,
         "lateArrival": "No",
         "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "date": "2026-06-22",
+        "inTime": "9.10",
+        "outTime": "18.10",
+        "workingHours": 9,
+        "lateArrival": "Yes",
+        "earlyLogout": "No"
     }
 ]
