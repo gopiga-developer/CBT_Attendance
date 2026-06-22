@@ -1,0 +1,74 @@
+[
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "9.00",
+        "outTime": "18.00",
+        "workingHours": 9,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "9.00",
+        "outTime": "18.00",
+        "workingHours": 9,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "10.00",
+        "outTime": "15.00",
+        "workingHours": 5,
+        "lateArrival": "Yes",
+        "earlyLogout": "Yes"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "9.00",
+        "outTime": "16.00",
+        "workingHours": 7,
+        "lateArrival": "No",
+        "earlyLogout": "Yes"
+    },
+    {
+        "employeeId": "EMP102",
+        "employeeName": "David",
+        "inTime": "10.00",
+        "outTime": "19.00",
+        "workingHours": 9,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "9.00",
+        "outTime": "19.00",
+        "workingHours": 10,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "inTime": "9.00",
+        "outTime": "18.00",
+        "workingHours": 9,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    },
+    {
+        "employeeId": "EMP102",
+        "employeeName": "David",
+        "inTime": "10.00",
+        "outTime": "19.00",
+        "workingHours": 9,
+        "lateArrival": "No",
+        "earlyLogout": "No"
+    }
+]
