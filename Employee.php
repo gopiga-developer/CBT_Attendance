@@ -7,15 +7,15 @@ class Employee
     private $shiftStart;
     private $shiftEnd;
 
-    public function __construct($employeeId, $employeeName, $shiftStart, $shiftEnd){
-        $this->employeeId = $employeeId;
-        $this->employeeName = $employeeName;
-        $this->shiftStart = $shiftStart;
-        $this->shiftEnd = $shiftEnd;
+    public function __construct($_employee_id, $_employee_name, $_shift_start, $_shift_end){
+        $this->employeeId = $_employee_id;
+        $this->employeeName = $_employee_name;
+        $this->shiftStart = $_shift_start;
+        $this->shiftEnd = $_shift_end;
     }
-    public function setEmployeeId($employeeId)
+    public function setEmployeeId($_employee_id)
     {
-        $this->employeeId = $employeeId;
+        $this->employeeId = $_employee_id;
     }
 
     public function getEmployeeId()
@@ -23,9 +23,9 @@ class Employee
         return $this->employeeId;
     }
 
-    public function setEmployeeName($employeeName)
+    public function setEmployeeName($_employee_name)
     {
-        $this->employeeName = $employeeName;
+        $this->employeeName = $_employee_name;
     }
 
     public function getEmployeeName()
@@ -33,9 +33,9 @@ class Employee
         return $this->employeeName;
     }
 
-    public function setShiftStart($shiftStart)
+    public function setShiftStart($_shift_start)
     {
-        $this->shiftStart = $shiftStart;
+        $this->shiftStart = $_shift_start;
     }
 
     public function getShiftStart()
@@ -43,9 +43,9 @@ class Employee
         return $this->shiftStart;
     }
 
-    public function setShiftEnd($shiftEnd)
+    public function setShiftEnd($_shift_end)
     {
-        $this->shiftEnd = $shiftEnd;
+        $this->shiftEnd = $_shift_end;
     }
 
     public function getShiftEnd()

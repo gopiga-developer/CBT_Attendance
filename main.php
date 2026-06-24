@@ -2,12 +2,11 @@
 
 require_once "AttendanceManager.php";
 
-class main{
+class main
+{
     public function run()
     {
-        $attendanceManager =
-        new AttendanceManager();
-
+        $attendanceManager = new AttendanceManager();
         $attendanceManager->start();
     }
 }

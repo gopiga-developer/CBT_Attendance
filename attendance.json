@@ -2,51 +2,27 @@
     {
         "employeeId": "EMP101",
         "employeeName": "John",
-        "inTime": "9.00",
-        "outTime": "18.00",
-        "workingHours": 9,
-        "lateArrival": "No",
-        "earlyLogout": "No"
-    },
-    {
-        "employeeId": "EMP101",
-        "employeeName": "John",
-        "inTime": "9.00",
-        "outTime": "18.00",
-        "workingHours": 9,
-        "lateArrival": "No",
-        "earlyLogout": "No"
-    },
-    {
-        "employeeId": "EMP101",
-        "employeeName": "John",
-        "inTime": "10.00",
-        "outTime": "15.00",
-        "workingHours": 5,
+        "date": "2026-06-22",
+        "inTime": "9.10",
+        "outTime": "18.30",
+        "workingHours": 9.333333333333334,
         "lateArrival": "Yes",
-        "earlyLogout": "Yes"
+        "earlyLogout": "No"
     },
     {
         "employeeId": "EMP101",
         "employeeName": "John",
+        "date": "2026-06-23",
         "inTime": "9.00",
-        "outTime": "16.00",
-        "workingHours": 7,
+        "outTime": "18.00",
+        "workingHours": 9,
         "lateArrival": "No",
-        "earlyLogout": "Yes"
+        "earlyLogout": "No"
     },
     {
         "employeeId": "EMP102",
         "employeeName": "David",
-        "inTime": "10.00",
-        "outTime": "19.00",
-        "workingHours": 9,
-        "lateArrival": "No",
-        "earlyLogout": "No"
-    },
-    {
-        "employeeId": "EMP101",
-        "employeeName": "John",
+        "date": "2026-06-23",
         "inTime": "9.00",
         "outTime": "19.00",
         "workingHours": 10,
@@ -56,7 +32,8 @@
     {
         "employeeId": "EMP101",
         "employeeName": "John",
-        "inTime": "9.00",
+        "date": "2026-06-24",
+        "inTime": "09.00",
         "outTime": "18.00",
         "workingHours": 9,
         "lateArrival": "No",
@@ -65,19 +42,10 @@
     {
         "employeeId": "EMP102",
         "employeeName": "David",
-        "inTime": "10.00",
-        "outTime": "19.00",
-        "workingHours": 9,
-        "lateArrival": "No",
-        "earlyLogout": "No"
-    },
-    {
-        "employeeId": "EMP101",
-        "employeeName": "John",
-        "date": "2026-06-22",
-        "inTime": "9.10",
-        "outTime": "18.10",
-        "workingHours": 9,
+        "date": "2026-06-24",
+        "inTime": "10.19",
+        "outTime": "19.30",
+        "workingHours": 9.183333333333334,
         "lateArrival": "Yes",
         "earlyLogout": "No"
     }

@@ -1,45 +1,51 @@
 <?php
 
+require_once "FileManager.php";
 require_once "Employee.php";
+
 /**Manages employee attendance operations.*/
-
-class AttendanceManager
+class AttendanceManager extends FileManager
 {
-    private $employees;
-    /* Load employee data from JSON file.*/
+    private array $employees = [];
 
+    /**
+     * Load employee data from JSON file.
+     */
     public function __construct()
     {
-        $data = json_decode( file_get_contents("masterlist.json"), true);
+        $data = $this->readJson("masterdetails.json");
 
-        foreach ($data as $emp) 
-        {
-            $this->employees[] = new Employee(
-                $emp["employeeId"],
-                $emp["employeeName"],
-                $emp["shiftStart"],
-                $emp["shiftEnd"]
+        foreach ($data as $employee) {
+            $this->employees[$employee["employeeId"]] = new Employee(
+                $employee["employeeId"],
+                $employee["employeeName"],
+                $employee["shiftStart"],
+                $employee["shiftEnd"]
             );
         }
     }
-/* Start attendance process. */
+
+    /* Start attendance process. */
     public function start()
     {
         $employee = $this->getEmployee();
 
-        $inTime = $this->getInTime();
+        $this->validateAttendance($employee->getEmployeeId());
 
-        $outTime = $this->getOutTime();
+        $in_time = $this->getInput("Enter In Time (HH:MM) : ");
 
-        $workingHours = $this->calculateWorkingHours($inTime, $outTime );
+        $out_time = $this->getInput("Enter Out Time (HH:MM) : ");
 
-        $lateArrival = $this->isLateArrival( $inTime, $employee->getShiftStart());
+        $working_hours = $this->calculateWorkingHours($in_time, $out_time);
 
-        $earlyLogout = $this->isEarlyLogout(  $outTime, $employee->getShiftEnd() );
+        $late_arrival = $this->isLateArrival($in_time, $employee->getShiftStart());
 
-        $this->saveAttendance($employee, $inTime, $outTime, $workingHours, $lateArrival, $earlyLogout );
+        $early_logout = $this->isEarlyLogout($out_time, $employee->getShiftEnd());
 
-        $this->displayResult($employee, $workingHours, $lateArrival, $earlyLogout );
+        $this->saveAttendance($employee, $in_time, $out_time, $working_hours, $late_arrival, $early_logout);
+
+        $this->displayResult($employee, $working_hours, $late_arrival, $early_logout);
+
         $this->viewEmployeeTransactions();
     }
 
@@ -48,127 +54,139 @@ class AttendanceManager
         $attempts = 0;
 
         while ($attempts < 3) {
+            $employee_id = trim(readline("\nEnter Employee ID : "));
 
-            $employeeId = readline( "Enter Employee ID : ");
-
-            foreach ($this->employees as $employee) 
-            {
-
-                if ( $employee->getEmployeeId() === $employeeId) 
-                {
-                    return $employee;
-                }
+            if (isset($this->employees[$employee_id])) {
+                echo "Valid Employee\n";
+                return $this->employees[$employee_id];
             }
 
             $attempts++;
 
-            echo "Invalid Employee ID. Attempts Left : ". (3 - $attempts). "\n";
+            echo "Invalid Employee ID. Attempts Left : " . (3 - $attempts) . "\n";
         }
 
-        echo "Failed to Login\n";
+        echo "\nFailed To Login\n";
         exit;
     }
-    public function getDate()
+
+    public function validateAttendance(string $employeeId)
     {
-    return readline("Enter Date (YYYY-MM-DD): ");
-    }
-    public function getInTime()
-    {
-        return readline("Enter In Time (HH:MM) : " );
-    }
+        $attendance = $this->readJson("attendance.json") ?? [];
 
-    public function getOutTime()
-    {
-        return readline( "Enter Out Time (HH:MM) : " );
-    }
+        $today = date("Y-m-d");
 
-    public function calculateWorkingHours($inTime, $outTime) 
-    {
-        return ( strtotime($outTime) - strtotime($inTime) ) / 3600;
-    }
+        foreach ($attendance as $record) {
 
-    public function isLateArrival( $inTime, $shiftStart) 
-    {
-        return strtotime($inTime) > strtotime($shiftStart);
-    }
-
-    public function isEarlyLogout( $outTime, $shiftEnd) 
-    {
-        return strtotime($outTime) < strtotime($shiftEnd);
-    }
-    public function viewEmployeeTransactions()
-{
-    $employeeId = readline("Enter Employee ID : ");
-
-    if (!file_exists("attendance.json"))
-    {
-        echo "No attendance records found.\n";
-        return;
-    }
-
-    $attendance = json_decode(
-        file_get_contents("attendance.json"),
-        true
-    );
-
-    $found = false;
-
-    foreach ($attendance as $record)
-    {
-        if ($record["employeeId"] === $employeeId)
-        {
-            $found = true;
-
-            echo "\n------------------------\n";
-            echo "Date          : " . $record["date"] . "\n";
-            echo "Employee ID   : " . $record["employeeId"] . "\n";
-            echo "Employee Name : " . $record["employeeName"] . "\n";
-            echo "In Time       : " . $record["inTime"] . "\n";
-            echo "Out Time      : " . $record["outTime"] . "\n";
-            echo "Working Hours : " . $record["workingHours"] . "\n";
-            echo "Late Arrival  : " . $record["lateArrival"] . "\n";
-            echo "Early Logout  : " . $record["earlyLogout"] . "\n";
+            if ($record["employeeId"] === $employeeId && $record["date"] === $today) {
+                echo "\nAttendance already marked for today.\n";
+                $this->viewEmployeeTransactions();
+                exit;
+            }
         }
     }
 
-    if (!$found)
+    public function getInput(string $_message)
     {
-        echo "No transactions found for Employee ID: "
-             . $employeeId . "\n";
+        $attempts = 0;
+
+        while ($attempts < 3) {
+            $time = trim(readline($_message));
+
+            if (preg_match("/^(0[0-9]|1[0-9]|2[3])\.[0-5][0-9]$/", $time)) {
+                return $time;
+            }
+
+            $attempts++;
+
+            echo "Invalid Time Format. Attempts Left : " . (3 - $attempts) . "\n";
+        }
+
+        echo "\nUnable to store your attendance.\n";
+        exit;
+
     }
-}
-    public function saveAttendance($employee, $inTime, $outTime, $workingHours, $lateArrival, $earlyLogout ) {
+    public function calculateWorkingHours(string $_in_time, string $_out_time)
+    {
+        return (strtotime($_out_time) - strtotime($_in_time)) / 3600;
+    }
+
+    public function isLateArrival(string $_in_time, string $_shift_start)
+    {
+        return strtotime($_in_time) > strtotime($_shift_start);
+    }
+
+    public function isEarlyLogout(string $_out_time, string $_shift_end)
+    {
+        return strtotime($_out_time) < strtotime($_shift_end);
+    }
+
+    public function viewEmployeeTransactions()
+    {
+        $employeeId = readline("\nEnter Employee ID : ");
+
+        if (!file_exists("attendance.json")) {
+
+            echo "No attendance records found.\n";
+            return;
+        }
+
+        $attendance = $this->readJson("attendance.json");
+
+        $found = false;
+
+        foreach ($attendance as $record) {
+
+            if ($record["employeeId"] === $employeeId) {
+                $found = true;
+
+                echo "\n------------------------\n";
+                echo "Date          : " . $record["date"] . "\n";
+                echo "Employee ID   : " . $record["employeeId"] . "\n";
+                echo "Employee Name : " . $record["employeeName"] . "\n";
+                echo "In Time       : " . $record["inTime"] . "\n";
+                echo "Out Time      : " . $record["outTime"] . "\n";
+                echo "Working Hours : " . $record["workingHours"] . "\n";
+                echo "Late Arrival  : " . $record["lateArrival"] . "\n";
+                echo "Early Logout  : " . $record["earlyLogout"] . "\n";
+            }
+        }
+
+        if (!$found) {
+
+            echo "No transactions found for Employee ID: " . $employeeId . "\n";
+        }
+    }
+
+    public function saveAttendance(Employee $_employee, string $_in_time, string $_out_time, float $_working_hours, bool $_late_arrival, bool $_early_logout)
+    {
+        $attendance = $this->readJson("attendance.json") ?? [];
 
         $record = [
-            "employeeId" => $employee->getEmployeeId(),
-            "employeeName" => $employee->getEmployeeName(),
+            "employeeId" => $_employee->getEmployeeId(),
+            "employeeName" => $_employee->getEmployeeName(),
             "date" => date("Y-m-d"),
-            "inTime" => $inTime,
-            "outTime" => $outTime,
-            "workingHours" => $workingHours,
-            "lateArrival" => $lateArrival ? "Yes" : "No",
-            "earlyLogout" => $earlyLogout ? "Yes" : "No"
+            "inTime" => $_in_time,
+            "outTime" => $_out_time,
+            "workingHours" => $_working_hours,
+            "lateArrival" => $_late_arrival ? "Yes" : "No",
+            "earlyLogout" => $_early_logout ? "Yes" : "No"
         ];
-
-    
-
-        $attendance = [];
-
-        if (file_exists( "attendance.json" )
-        ) {
-            $attendance =json_decode( file_get_contents( "attendance.json" ), true );
-        }
 
         $attendance[] = $record;
 
-        file_put_contents( "attendance.json", json_encode( $attendance, JSON_PRETTY_PRINT ));
+        $this->writeJson("attendance.json", $attendance);
+
+        echo "\nAttendance marked successfully.\n";
     }
 
-    public function displayResult($employee, $workingHours, $lateArrival, $earlyLogout) 
+    public function displayResult(Employee $_employee, float $_working_hours, bool $_late_arrival, bool $_early_logout)
     {
-
-        echo "\nEmployee : " . $employee->getEmployeeName() ."\nDate : " . date("Y-m-d").  "\nWorking Hours : "
-            . $workingHours . "\nLate Arrival : ". ( $lateArrival ? "Yes": "No" ) . "\nEarly Logout : "
-            . ( $earlyLogout ? "Yes" : "No" );
+        echo "Employee : " . $_employee->getEmployeeName() . "\n";
+        "Date : " . date("Y-m-d") . "\n";
+        "Working Hours : " . $_working_hours . "\n";
+        "Late Arrival : " . ($_late_arrival ? "Yes" : "No") . "\n";
+        "Early Logout : " . ($_early_logout ? "Yes" : "No");
     }
 }
+
