@@ -70,7 +70,7 @@ class AttendanceManager extends FileManager
         exit;
     }
 
-    public function validateAttendance(string $employeeId)
+    public function validateAttendance(string $_employee_Id)
     {
         $attendance = $this->readJson("attendance.json") ?? [];
 
@@ -78,7 +78,7 @@ class AttendanceManager extends FileManager
 
         foreach ($attendance as $record) {
 
-            if ($record["employeeId"] === $employeeId && $record["date"] === $today) {
+            if ($record["employeeId"] === $_employee_Id && $record["date"] === $today) {
                 echo "\nAttendance already marked for today.\n";
                 $this->viewEmployeeTransactions();
                 exit;
