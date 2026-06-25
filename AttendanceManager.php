@@ -3,10 +3,12 @@
 require_once "FileManager.php";
 require_once "Employee.php";
 
+
 /**Manages employee attendance operations.*/
 class AttendanceManager extends FileManager
 {
     private array $employees = [];
+    private array $attendance = [];
 
     /**
      * Load employee data from JSON file.
@@ -23,14 +25,22 @@ class AttendanceManager extends FileManager
                 $employee["shiftEnd"]
             );
         }
+        $this->attendance = $this->readJson("attendance.json") ?? [];
     }
 
     /* Start attendance process. */
     public function start()
     {
+        if (!$this->validateWeeklyOff()) {
+            return;
+        }
+
         $employee = $this->getEmployee();
 
-        $this->validateAttendance($employee->getEmployeeId());
+        if (!$this->validateAttendance($this->attendance, $employee->getEmployeeId())) {
+            return;
+    }
+        $this->validateAttendance($this->attendance, $employee->getEmployeeId());
 
         $in_time = $this->getInput("Enter In Time (HH:MM) : ");
 
@@ -47,8 +57,67 @@ class AttendanceManager extends FileManager
         $this->displayResult($employee, $working_hours, $late_arrival, $early_logout);
 
         $this->viewEmployeeTransactions();
+
+    }
+    public function showMenu()
+    {
+        while (true) {
+
+            echo "\n========== Attendance System ==========\n";
+            echo "1. Mark Attendance\n";
+            echo "2. View Employee Transactions\n";
+            echo "3. Exit\n";
+
+            $choice = trim(readline("Enter Choice : "));
+
+            switch ($choice) {
+
+                case "1": $this->start(); break;
+
+                case "2": $this->viewEmployeeTransactions(); break;
+
+                case "3": exit("\nThank You\n");
+
+                default: echo "\nInvalid Choice\n";
+            }
+        }
+
     }
 
+    public function validateWeeklyOff()
+    {
+        $day = date("l");
+
+        if ($day === "Saturday" || $day === "Sunday") {
+
+            echo "\nToday is {$day}.\n";
+            echo "Weekly Off. Attendance cannot be marked.\n";
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public function validateAttendance(
+        array $_attendance,
+        string $_employee_id
+    )
+    {
+        $today = date("Y-m-d");
+
+        foreach ($_attendance as $record) {
+
+            if ($record["employeeId"] === $_employee_id && $record["date"] === $today) {
+
+                echo "\nAttendance already marked for today.\n";
+
+                return false;
+            }
+        }
+
+        return true;
+    }
     public function getEmployee()
     {
         $attempts = 0;
@@ -69,23 +138,6 @@ class AttendanceManager extends FileManager
         echo "\nFailed To Login\n";
         exit;
     }
-
-    public function validateAttendance(string $_employee_Id)
-    {
-        $attendance = $this->readJson("attendance.json") ?? [];
-
-        $today = date("Y-m-d");
-
-        foreach ($attendance as $record) {
-
-            if ($record["employeeId"] === $_employee_Id && $record["date"] === $today) {
-                echo "\nAttendance already marked for today.\n";
-                $this->viewEmployeeTransactions();
-                exit;
-            }
-        }
-    }
-
     public function getInput(string $_message)
     {
         $attempts = 0;
@@ -130,12 +182,9 @@ class AttendanceManager extends FileManager
             echo "No attendance records found.\n";
             return;
         }
-
-        $attendance = $this->readJson("attendance.json");
-
         $found = false;
 
-        foreach ($attendance as $record) {
+        foreach ($this->attendance as $record) {
 
             if ($record["employeeId"] === $employeeId) {
                 $found = true;
@@ -160,8 +209,6 @@ class AttendanceManager extends FileManager
 
     public function saveAttendance(Employee $_employee, string $_in_time, string $_out_time, float $_working_hours, bool $_late_arrival, bool $_early_logout)
     {
-        $attendance = $this->readJson("attendance.json") ?? [];
-
         $record = [
             "employeeId" => $_employee->getEmployeeId(),
             "employeeName" => $_employee->getEmployeeName(),
@@ -173,9 +220,9 @@ class AttendanceManager extends FileManager
             "earlyLogout" => $_early_logout ? "Yes" : "No"
         ];
 
-        $attendance[] = $record;
+        $this->attendance[] = $record;
 
-        $this->writeJson("attendance.json", $attendance);
+        $this->writeJson("attendance.json", $this->attendance);
 
         echo "\nAttendance marked successfully.\n";
     }

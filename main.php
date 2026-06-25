@@ -7,7 +7,7 @@ class main
     public function run()
     {
         $attendanceManager = new AttendanceManager();
-        $attendanceManager->start();
+        $attendanceManager->showMenu();
     }
 }
 
