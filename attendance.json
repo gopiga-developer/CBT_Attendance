@@ -1,21 +1,23 @@
 [
     {
-        "employeeId": "EMP102",
-        "employeeName": "David",
-        "date": "2026-06-25",
-        "inTime": "10.10",
-        "outTime": "18.10",
-        "workingHours": 8,
-        "lateArrival": "Yes",
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "employeeCategory": "Regular Employee",
+        "date": "2026-06-26",
+        "inTime": "09.00",
+        "outTime": "16.00",
+        "workingHours": 7,
+        "lateArrival": "No",
         "earlyLogout": "Yes"
     },
     {
-        "employeeId": "EMP101",
-        "employeeName": "John",
-        "date": "2026-06-25",
-        "inTime": "09.00",
+        "employeeId": "CON101",
+        "employeeName": "David",
+        "employeeCategory": "Contract Employee",
+        "date": "2026-06-26",
+        "inTime": "10.00",
         "outTime": "19.00",
-        "workingHours": 10,
+        "workingHours": 9,
         "lateArrival": "No",
         "earlyLogout": "No"
     }

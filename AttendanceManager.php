@@ -2,6 +2,8 @@
 
 require_once "FileManager.php";
 require_once "Employee.php";
+require_once "RegularEmployee.php";
+require_once "ContractEmployee.php";
 
 
 /**Manages employee attendance operations.*/
@@ -18,16 +20,21 @@ class AttendanceManager extends FileManager
         $data = $this->readJson("masterdetails.json");
 
         foreach ($data as $employee) {
-            $this->employees[$employee["employeeId"]] = new Employee(
-                $employee["employeeId"],
-                $employee["employeeName"],
-                $employee["shiftStart"],
-                $employee["shiftEnd"]
-            );
+
+            if (str_starts_with($employee["employeeId"], "EMP")) {
+
+                $this->employees[$employee["employeeId"]] =
+                    new RegularEmployee( $employee["employeeId"], $employee["employeeName"], $employee["shiftStart"],$employee["shiftEnd"]);
+
+            } else {
+
+                $this->employees[$employee["employeeId"]] =
+                    new ContractEmployee( $employee["employeeId"], $employee["employeeName"]);
+            }
         }
+
         $this->attendance = $this->readJson("attendance.json") ?? [];
     }
-
     /* Start attendance process. */
     public function start()
     {
@@ -39,25 +46,34 @@ class AttendanceManager extends FileManager
 
         if (!$this->validateAttendance($this->attendance, $employee->getEmployeeId())) {
             return;
-    }
+        }
         $this->validateAttendance($this->attendance, $employee->getEmployeeId());
 
         $in_time = $this->getInput("Enter In Time (HH:MM) : ");
 
         $out_time = $this->getInput("Enter Out Time (HH:MM) : ");
 
-        $working_hours = $this->calculateWorkingHours($in_time, $out_time);
+        // Common calculation for both Regular and Contract Employee
+        $working_hours = $employee->calculateWorkingHours($in_time,$out_time);
 
-        $late_arrival = $this->isLateArrival($in_time, $employee->getShiftStart());
+        if ($employee instanceof ContractEmployee) {
+            // Contract employees don't have fixed shift timings
+            $late_arrival = false;
+            $early_logout = false;
 
-        $early_logout = $this->isEarlyLogout($out_time, $employee->getShiftEnd());
+        } else {
+
+            // Regular employees only
+            $late_arrival = $employee->isLateArrival($in_time, $employee->getShiftStart() );
+
+            $early_logout = $employee->isEarlyLogout( $out_time, $employee->getShiftEnd());
+        }
 
         $this->saveAttendance($employee, $in_time, $out_time, $working_hours, $late_arrival, $early_logout);
 
         $this->displayResult($employee, $working_hours, $late_arrival, $early_logout);
 
-        $this->viewEmployeeTransactions();
-
+        return;
     }
     public function showMenu()
     {
@@ -72,13 +88,21 @@ class AttendanceManager extends FileManager
 
             switch ($choice) {
 
-                case "1": $this->start(); break;
+                case "1":
+                    $this->start();
 
-                case "2": $this->viewEmployeeTransactions(); break;
+                    break;
 
-                case "3": exit("\nThank You\n");
+                case "2":
+                    $this->viewEmployeeTransactions();
+                    
+                    break;
 
-                default: echo "\nInvalid Choice\n";
+                case "3":
+                    exit("\nThank You\n");
+
+                default:
+                    echo "\nInvalid Choice\n";
             }
         }
 
@@ -99,11 +123,7 @@ class AttendanceManager extends FileManager
         return true;
     }
 
-    public function validateAttendance(
-        array $_attendance,
-        string $_employee_id
-    )
-    {
+    public function validateAttendance(array $_attendance, string $_employee_id) {
         $today = date("Y-m-d");
 
         foreach ($_attendance as $record) {
@@ -145,7 +165,7 @@ class AttendanceManager extends FileManager
         while ($attempts < 3) {
             $time = trim(readline($_message));
 
-            if (preg_match("/^(0[0-9]|1[0-9]|2[3])\.[0-5][0-9]$/", $time)) {
+            if (preg_match("/^(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/", $time)) {
                 return $time;
             }
 
@@ -158,21 +178,6 @@ class AttendanceManager extends FileManager
         exit;
 
     }
-    public function calculateWorkingHours(string $_in_time, string $_out_time)
-    {
-        return (strtotime($_out_time) - strtotime($_in_time)) / 3600;
-    }
-
-    public function isLateArrival(string $_in_time, string $_shift_start)
-    {
-        return strtotime($_in_time) > strtotime($_shift_start);
-    }
-
-    public function isEarlyLogout(string $_out_time, string $_shift_end)
-    {
-        return strtotime($_out_time) < strtotime($_shift_end);
-    }
-
     public function viewEmployeeTransactions()
     {
         $employeeId = readline("\nEnter Employee ID : ");
@@ -190,14 +195,15 @@ class AttendanceManager extends FileManager
                 $found = true;
 
                 echo "\n------------------------\n";
-                echo "Date          : " . $record["date"] . "\n";
-                echo "Employee ID   : " . $record["employeeId"] . "\n";
-                echo "Employee Name : " . $record["employeeName"] . "\n";
-                echo "In Time       : " . $record["inTime"] . "\n";
-                echo "Out Time      : " . $record["outTime"] . "\n";
-                echo "Working Hours : " . $record["workingHours"] . "\n";
-                echo "Late Arrival  : " . $record["lateArrival"] . "\n";
-                echo "Early Logout  : " . $record["earlyLogout"] . "\n";
+                echo "Date                : " . $record["date"] . "\n";
+                echo "Employee ID         : " . $record["employeeId"] . "\n";
+                echo "Employee Name       : " . $record["employeeName"] . "\n";
+                echo "Employee Category   : " . $record["employeeCategory"] . "\n";
+                echo "In Time             : " . $record["inTime"] . "\n";
+                echo "Out Time            : " . $record["outTime"] . "\n";
+                echo "Working Hours       : " . $record["workingHours"] . "\n";
+                echo "Late Arrival        : " . $record["lateArrival"] . "\n";
+                echo "Early Logout        : " . $record["earlyLogout"] . "\n";
             }
         }
 
@@ -207,17 +213,18 @@ class AttendanceManager extends FileManager
         }
     }
 
-    public function saveAttendance(Employee $_employee, string $_in_time, string $_out_time, float $_working_hours, bool $_late_arrival, bool $_early_logout)
+    public function saveAttendance($_employee, string $_in_time, string $_out_time, float $_working_hours, bool $_late_arrival, bool $_early_logout)
     {
         $record = [
             "employeeId" => $_employee->getEmployeeId(),
             "employeeName" => $_employee->getEmployeeName(),
+            "employeeCategory" => $_employee->getEmployeeCategory(),
             "date" => date("Y-m-d"),
             "inTime" => $_in_time,
             "outTime" => $_out_time,
             "workingHours" => $_working_hours,
             "lateArrival" => $_late_arrival ? "Yes" : "No",
-            "earlyLogout" => $_early_logout ? "Yes" : "No"
+            "earlyLogout" => $_early_logout ? "Yes" : "No",         
         ];
 
         $this->attendance[] = $record;
@@ -227,13 +234,15 @@ class AttendanceManager extends FileManager
         echo "\nAttendance marked successfully.\n";
     }
 
-    public function displayResult(Employee $_employee, float $_working_hours, bool $_late_arrival, bool $_early_logout)
+    public function displayResult($_employee, float $_working_hours, bool $_late_arrival, bool $_early_logout)
     {
         echo "Employee : " . $_employee->getEmployeeName() . "\n";
+        "Employee Category : " . $_employee->getEmployeeCategory() . "\n";
         "Date : " . date("Y-m-d") . "\n";
         "Working Hours : " . $_working_hours . "\n";
         "Late Arrival : " . ($_late_arrival ? "Yes" : "No") . "\n";
         "Early Logout : " . ($_early_logout ? "Yes" : "No");
+        
     }
 }
 

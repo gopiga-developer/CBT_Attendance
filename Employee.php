@@ -2,20 +2,13 @@
 
 class Employee
 {
-    private $employeeId;
-    private $employeeName;
-    private $shiftStart;
-    private $shiftEnd;
+    protected $employeeId;
+    protected $employeeName;
 
-    public function __construct($_employee_id, $_employee_name, $_shift_start, $_shift_end){
-        $this->employeeId = $_employee_id;
-        $this->employeeName = $_employee_name;
-        $this->shiftStart = $_shift_start;
-        $this->shiftEnd = $_shift_end;
-    }
-    public function setEmployeeId($_employee_id)
+    public function __construct($_employee_id,$_employee_name) 
     {
         $this->employeeId = $_employee_id;
+        $this->employeeName = $_employee_name;
     }
 
     public function getEmployeeId()
@@ -23,33 +16,34 @@ class Employee
         return $this->employeeId;
     }
 
-    public function setEmployeeName($_employee_name)
-    {
-        $this->employeeName = $_employee_name;
-    }
-
     public function getEmployeeName()
     {
         return $this->employeeName;
     }
-
-    public function setShiftStart($_shift_start)
+    // Method Overriding
+    public function getEmployeeCategory()
     {
-        $this->shiftStart = $_shift_start;
+        return "Employee";
+    }
+    public function calculateWorkingHours(string $_in_time, string $_out_time) {
+        $inTime = str_replace(".", ":", $_in_time);
+        $outTime = str_replace(".", ":", $_out_time);
+
+        return (strtotime($outTime) - strtotime($inTime)) / 3600;
     }
 
-    public function getShiftStart()
-    {
-        return $this->shiftStart;
+    public function isLateArrival(string $_in_time, string $_shift_start) {
+        $inTime = str_replace(".", ":", $_in_time);
+        $shiftStart = str_replace(".", ":", $_shift_start);
+
+        return strtotime($inTime) > strtotime($shiftStart);
     }
 
-    public function setShiftEnd($_shift_end)
-    {
-        $this->shiftEnd = $_shift_end;
+    public function isEarlyLogout(string $_out_time,string $_shift_end) {
+        $outTime = str_replace(".", ":", $_out_time);
+        $shiftEnd = str_replace(".", ":", $_shift_end);
+
+        return strtotime($outTime) < strtotime($shiftEnd);
     }
 
-    public function getShiftEnd()
-    {
-        return $this->shiftEnd;
-    }
 }

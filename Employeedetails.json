@@ -1,0 +1,19 @@
+[
+    {
+        "employeeId": "EMP101",
+        "employeeName": "John",
+        "shiftStart": "09:00:00",
+        "shiftEnd": "18:00:00"
+    },
+    {
+        "employeeId": "EMP103",
+        "employeeName": "John",
+        "shiftStart": "09:00:00",
+        "shiftEnd": "19:00:00"
+    },
+    {
+        "employeeId":"CON101",
+        "employeeName":"David",
+        "employeeType":"contract"
+    }
+]
