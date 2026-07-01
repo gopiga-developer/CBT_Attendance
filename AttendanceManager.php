@@ -24,23 +24,11 @@ class AttendanceManager extends Database
 
     if (str_starts_with($employee["employeeId"], "EMP")) {
 
-        $this->employees[$employee["employeeId"]] =
-            new RegularEmployee(
-                $employee["id"],
-                $employee["employeeId"],
-                $employee["employeeName"],
-                $employee["shiftStart"],
-                $employee["shiftEnd"]
-            );
+        $this->employees[$employee["employeeId"]] = new RegularEmployee( $employee["id"], $employee["employeeId"], $employee["employeeName"],$employee["shiftStart"],$employee["shiftEnd"]);
 
     } else {
 
-        $this->employees[$employee["employeeId"]] =
-            new ContractEmployee(
-                $employee["id"],
-                $employee["employeeId"],
-                $employee["employeeName"]
-            );
+        $this->employees[$employee["employeeId"]] = new ContractEmployee( $employee["id"], $employee["employeeId"], $employee["employeeName"]);
     }
     }  
     }
@@ -131,9 +119,7 @@ class AttendanceManager extends Database
 
     public function validateAttendance(string $_employee_id)
     {
-        $query = "SELECT * FROM attendance 
-              WHERE employeeId='$_employee_id' 
-              AND attendanceDate=CURDATE()";
+        $query = "SELECT * FROM attendance WHERE employeeId='$_employee_id' AND attendanceDate=CURDATE()";
 
         $result = $this->connection->query($query);
 
